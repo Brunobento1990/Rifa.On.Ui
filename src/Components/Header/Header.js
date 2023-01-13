@@ -1,10 +1,11 @@
 import './Header.css'
+import Menu from '../Menu/Menu';
 
 const Header = () => {
 
     return(
         <header>
-            <p>Sua Rifa mais segura !</p>
+            <Menu/>
         </header>
     )
 }

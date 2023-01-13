@@ -1,12 +1,10 @@
-import './Footer.css'
-
 const Footer = () => {
 
     const dataAtual = new Date();
-    const anoAtual = dataAtual. getFullYear();
+    const anoAtual = dataAtual.getFullYear();
     return(
         <footer>
-            <p className='pFooter'>&copy;{anoAtual} Rifa.On</p>
+            <p className='text-primary'>&copy;{anoAtual} Rifa.On</p>
         </footer>
     )
 }

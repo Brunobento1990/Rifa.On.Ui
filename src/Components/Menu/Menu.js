@@ -1,39 +1,17 @@
-import {useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  Nav,
-  NavItem,
-  NavLink
-} from 'reactstrap';
+import { Link } from 'react-router-dom';
 
 function Menu() {
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggle = () => setIsOpen(!isOpen);
-
   return (
-    <div className='col-4'>
-        <Navbar color="light" light expand="md-3">
-        <NavbarToggler onClick={toggle} />
-        <Collapse isOpen={isOpen} navbar>
-            <Nav className="mr-auto" navbar>
-            <NavItem>
-                <NavLink href="/sobre">Sobre</NavLink>
-            </NavItem>
-            <NavItem>
-                <NavLink href="/produtos">Produtos</NavLink>
-            </NavItem>
-            <NavItem>
-                <NavLink href="/contato">Contato</NavLink>
-            </NavItem>
-            </Nav>
-        </Collapse>
-        </Navbar>
-    </div>
+    <ul className="nav justify-content-center">
+      <li className="nav-item">
+        <Link className='nav-link active' to='/Rifas'>Rifas</Link>
+      </li>
+      <li className="nav-item">
+        <Link className='nav-link' to='/AtualizaCadastro'>Cadastro</Link>
+      </li>
+    </ul>
   );
 }
 

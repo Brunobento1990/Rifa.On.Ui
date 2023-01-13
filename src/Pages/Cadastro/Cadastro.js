@@ -1,17 +1,20 @@
 import { useState, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
+import LoadingSucess from "../../Components/Loading/LoadingSucess/LoadingSucess";
 import { VendedorContext } from '../../Context/VendedorContext';
 
-const Cadastro = ({id,nome,cpf,dataNascimento,email,senha
-  ,ddd,telefone,link}) => {
-
-    const navigate = useNavigate();
+const Cadastro = ({modelVendedor,bool}) => {
 
     const Cadastar = async (e) => {
-        
+        e.preventDefault();
         setLoading(true);
 
-        e.preventDefault();
+        if(!Nome || !Cpf || !DataNascimento || !Ddd || !Link || !Telefone){
+            setError("É necessário preencher todos os campos !")
+            setErrorBool(true);
+            setLoading(false);
+            return;
+        }
 
         let validarEmail = (email) => {
             var result = /\S+@\S+\.\S+/;
@@ -25,15 +28,8 @@ const Cadastro = ({id,nome,cpf,dataNascimento,email,senha
             return;
         }
 
-        if(!Nome || !Cpf || !DataNascimento || !Ddd || !Link || !Telefone){
-            setError("É necessário preencher todos os campos !")
-            setErrorBool(true);
-            setLoading(false);
-            return;
-        }
-
-        if(Senha !== ConfimaSenha){
-            setError("As senhas estão diferentes !")
+        if(Senha !== ConfimaSenha || Senha.length < 8 || ConfimaSenha.length < 8){
+            setError("Senhas inválidas !")
             setErrorBool(true);
             setLoading(false);
             return;
@@ -70,49 +66,79 @@ const Cadastro = ({id,nome,cpf,dataNascimento,email,senha
             RedesSociaisVendedor:RedesSociaisVendedor
         }
 
-        if(id > 0){
-            Vendedor.Id = id;
-            Vendedor.ContatoVendedor.VendedorId = id;
-            Vendedor.RedesSociaisVendedor.VendedorId = id;
+        if(modelVendedor.id > 0){
+            Vendedor.Id = modelVendedor.id;
+            Vendedor.ContatoVendedor.VendedorId = modelVendedor.id;
+            Vendedor.RedesSociaisVendedor.VendedorId = modelVendedor.id;
+            Vendedor.RedesSociaisVendedor.Id = modelVendedor.redesSociaisVendedor.id;
+            Vendedor.ContatoVendedor.Id = modelVendedor.contatoVendedor.id
         }
 
-        const url = 'https://localhost:44363/Vendedors/AdicionarVendedor';
+        if(!bool){
+            const url = "https://localhost:44363/Vendedors/AdicionarVendedor";
 
-        const options = {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify(Vendedor)
-        };
+            const options = {
+                method: 'POST',
+                headers: { 'content-type': 'application/json'},
+                body: JSON.stringify(Vendedor)
+            };
+        
+            const useFetch = await fetch(url, options);
     
-        const useFetch = await fetch(url, options);
+            if(useFetch.status === 200){
+                let data = await useFetch.json();
+                setVendedor(data.vendedor);
+                navigate('/Rifas');
+            }else{
+                setLoading(false);
+                setError("Ocorreu algum erro. Tente novamente mais tarde.")
+            }
 
-        if(useFetch.status === 200){
-            let data = await useFetch.json();
-            setVendedor(data.vendedor);
-            navigate('/Principal');
         }else{
-            setLoading(false);
-            setError("Ocorreu algum erro. Tente novamente mais tarde.")
+            const url = "https://localhost:44363/Vendedors/EditarVendedor";
+
+            const options = {
+                method: 'POST',
+                headers: { 'content-type': 'application/json','Authorization': 'Bearer ' + modelVendedor.token },
+                body: JSON.stringify(Vendedor)
+            };
+        
+            const useFetch = await fetch(url, options);
+    
+            if(useFetch.status === 200){
+                let data = await useFetch.json();
+                setVendedor(data.vendedor);
+                navigate('/Rifas');
+            }else{
+                setLoading(false);
+                setError("Ocorreu algum erro. Tente novamente mais tarde.")
+            }
         }
+
+        
     }
 
-    const [Nome, setNome] = useState(nome);
-    const [Cpf, setCpf] = useState(cpf);
-    const [DataNascimento, setDataNascimento] = useState(dataNascimento);
-    const [Email, setEmail] = useState(email);
-    const [Senha, setSenha] = useState(senha);
-    const [ConfimaSenha, setConfimaSenha] = useState("");
+    let date = modelVendedor.dataNascimento.slice(0,10);
+
+    const [Nome, setNome] = useState(modelVendedor.nome);
+    const [Cpf, setCpf] = useState(modelVendedor.cpf);
+    const [DataNascimento, setDataNascimento] = useState(date);
+    const [Email, setEmail] = useState(modelVendedor.email);
+    const [Senha, setSenha] = useState(modelVendedor.senha);
+    const [ConfimaSenha, setConfimaSenha] = useState(modelVendedor.senha);
     const [Ativo, setAtivo] = useState(true);
     const [Error, setError] = useState("");
     const [ErrorBool, setErrorBool] = useState(false);
-    const [Ddd, setDdd] = useState(ddd);
-    const [Telefone, setTelefone] = useState(telefone);
-    const [Link, setLink] = useState(link);
+    const [Ddd, setDdd] = useState(modelVendedor.contatoVendedor.ddd);
+    const [Telefone, setTelefone] = useState(modelVendedor.contatoVendedor.telefone);
+    const [Link, setLink] = useState(modelVendedor.redesSociaisVendedor.link);
     const [loading,setLoading] = useState(false);
     const {setVendedor} = useContext(VendedorContext);
+    const navigate = useNavigate();
 
     return(
-        <div className='container-md col-12'>
+        <div>
+            <div className='container-md col-12'>
                 <div className='card-body'>
                     <div className='form-group row'>    
                         <div className='col-4'>
@@ -124,11 +150,6 @@ const Cadastro = ({id,nome,cpf,dataNascimento,email,senha
                             <label className='text-danger'>Todos os campos são de preenchimento obrigatório.</label>
                         </div>
                     </div>
-                    {ErrorBool && 
-                        <div className="alert alert-danger" role="alert">
-                            {Error}
-                        </div>
-                    }
                     <div className="form-floating mb-3">
                         <input id="nome" className='form-control' maxLength="100" value={Nome} type="text" placeholder='Digite seu Nome' name="nome" onChange={(e) => setNome(e.target.value)}/>
                         <label htmlFor="nome">Nome</label>
@@ -174,22 +195,30 @@ const Cadastro = ({id,nome,cpf,dataNascimento,email,senha
                         <label htmlFor="telefone">WhatsApp</label>
                     </div>
 
-                    {loading && 
-                        <div className="form-group row">
-                            <div className="col-4 spinner-border text-success" role="status">
-                            </div>
+                    
+                    {ErrorBool && 
+                        <div className="alert alert-danger" role="alert">
+                            {Error}
                         </div>
                     }
                     
                     <div className='form-group row'>
                         <div className='col-12'>
-                            <button onClick={Cadastar} className='form-control btn btn-success waves-effect waves-light'>Finalizar  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-right-square" viewBox="0 0 16 16">
+                            {loading ?
+
+                                <button onClick={Cadastar} className='form-control btn btn-success waves-effect waves-light'>
+                                    <LoadingSucess/>
+                                </button>
+                            :
+                                <button onClick={Cadastar} className='form-control btn btn-success waves-effect waves-light'>Finalizar  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-right-square" viewBox="0 0 16 16">
                                     <path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                                </svg>
-                            </button>
+                                    </svg>
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>           
+            </div>
             </div>
     )
 }

@@ -1,3 +1,9 @@
+.Container-Flex{
+    display: flex;
+    align-items: center;
+    justify-items: center;
+}
+
 
 .App{
 display: flex;
